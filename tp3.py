@@ -1,6 +1,5 @@
 import csv
 import sys
-csv.field_size_limit(sys.maxsize)
 import regex as re
 
 import gensim.models
@@ -13,12 +12,16 @@ except AttributeError:
     pass
 
 import warnings
-warnings.filterwarnings('ignore')
 from typing import List, Union
+warnings.filterwarnings('ignore')
+csv.field_size_limit(sys.maxsize)
 
-class TP3_gensim:
+
+class TP3Gensim:
 
     TEXT_VECTOR_OUTPUT = 'data/text_vector.txt'
+
+    model = None
     
     @staticmethod
     def clean_sentence(sentence):
@@ -63,7 +66,7 @@ class TP3_gensim:
 # python -m spacy init-model --prune-vectors 139000 en . -v text_vector.txt
 
 
-class TP3_spacy:
+class TP3Spacy:
     DATA_DIR = 'data'
 
     SIMILARITY_TOLERANCE = 0.4
@@ -72,7 +75,7 @@ class TP3_spacy:
 
     @classmethod
     def get_adata(cls):
-        cls.nlp = spacy.load(cls.DATA_DAR)
+        cls.nlp = spacy.load(cls.DATA_DIR)
 
     @classmethod
     def most_similar(cls, word: Lexeme) -> List[Lexeme]:
