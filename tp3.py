@@ -16,10 +16,12 @@ from typing import List, Union
 warnings.filterwarnings('ignore')
 csv.field_size_limit(sys.maxsize)
 
+from config import config
+
 
 class TP3Gensim:
 
-    TEXT_VECTOR_OUTPUT = 'data/text_vector.txt'
+    TEXT_VECTOR_OUTPUT = config.get('files', 'embeddings file')
 
     model = None
     
