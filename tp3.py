@@ -2,6 +2,7 @@ import csv
 import sys
 csv.field_size_limit(sys.maxsize)
 import regex as re
+from gensim.parsing.preprocessing import remove_stopwords
 
 import gensim.models
 import spacy
@@ -19,8 +20,10 @@ from typing import List, Union
 class TP3_gensim:
 
     TEXT_VECTOR_OUTPUT = 'data/text_vector.txt'
-    
+
+    OUTPUT_DATAFILE = 'data/wordslist.txt'
     @staticmethod
+
     def clean_sentence(sentence):
                 result = []
                 last = 0
@@ -44,6 +47,28 @@ class TP3_gensim:
     @classmethod
     def train_model(cls):
         cls.model = gensim.models.Word2Vec(sentences=list(cls.get_model_data()))
+
+    @classmethod
+    def get_words(cls, rem_stopwords=True):
+        from collections import defaultdict
+        from operator import itemgetter
+        result = defaultdict(int)
+        for words in cls.get_model_data():
+            for word in words:
+                result[word] += 1
+        if rem_stopwords:
+            result = [r for r in result.items() if remove_stopwords(r[0])]
+        else:
+            result = [r for r in result.items()]
+        result.sort(key=itemgetter(1), reverse=True)
+        return result
+
+    @classmethod
+    def dump_words(cls, rem_stopwords=True):
+        words = cls.get_words(rem_stopwords)
+        with open(cls.OUTPUT_DATAFILE, 'w') as f:
+            for word, count in words:
+                f.write(f'{word}\t{count}\n')
 
     @classmethod
     def export_text(cls, stop=None):
