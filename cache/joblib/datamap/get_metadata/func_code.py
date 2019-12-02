@@ -1,4 +1,4 @@
-# first line: 54
+# first line: 56
     @classmethod
     @memory.cache
     def get_metadata(cls, word: str) -> Tuple[int, FrozenSet[str], FrozenSet[str]]:

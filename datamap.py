@@ -8,6 +8,7 @@ from wordnik import swagger, WordApi
 from config import config
 from joblib import Memory
 from morph import flatten
+from time import sleep
 
 
 class Relation(Enum):
@@ -83,7 +84,7 @@ class DataMap:
 
     @staticmethod
     @memory.cache
-    def synonym(a: Tuple[int, FrozenSet[str], FrozenSet[str]], b: Tuple[int, FrozenSet[str], FrozenSet[str]]) -> bool:
+    def is_synonym(a: Tuple[int, FrozenSet[str], FrozenSet[str]], b: Tuple[int, FrozenSet[str], FrozenSet[str]]) -> bool:
         return a[0] == b[0]
 
     @staticmethod
@@ -101,10 +102,18 @@ class DataMap:
         return bool([p for p in parts if word in p])
 
     @classmethod
-    def part_of(cls, a: str, b: str, synonyms: Set[str]) -> bool:
+    def part_of(cls, a: str, b: str) -> bool:
+        """
+        Returns whether word a is semantically a part of b.
+        :param a: a word
+        :param b: a word
+        :param synonyms: synonyms of a
+        :return:
+        """
         definition = cls.parser.fetch(b)
-        synonyms.add(a)
-        synonyms = '|'.join(synonyms)
+        a = cls.get_synonyms(a)
+        print(a)
+        synonyms = '|'.join(a)
         try:
             definitions = [d['definitions'] for d in definition]
             definitions = flatten(definitions)
@@ -120,50 +129,81 @@ class DataMap:
     @staticmethod
     @memory.cache
     def morphologique(a: str, b: str) -> bool:
+        """
+        :param a: a word
+        :param b: a word
+        :return: True if both a and b sound the same.
+        """
         return soundex(a) == soundex(b)
 
     @classmethod
     @memory.cache
     def defintion(cls, word: str):
+        """
+        Fetches a definition from Wordnik.
+        :param word: The word to define.
+        :return: The definition from Wordnik.
+        """
         client = swagger.ApiClient(cls.WORDNIK_API_KEY, cls.WORDNIK_API_URL)
         word_api = WordApi.WordApi(client)
         return word_api.getRelatedWords(word)
 
     @classmethod
-    def relation(cls, a: str, b: str) -> Tuple[bool, Union[Relation, Set[str]]]:
-        synonyms = set()
+    def get_synonyms(cls, word: str) -> Set[str]:
+        synonyms = {word}
+        definitions = cls.defintion(word)
+        for definition in definitions:
+            if word not in definition.words:
+                continue
+            if definition.relationshipType in cls.relations[Relation.SYNONYM]:
+                synonyms = synonyms.union(definition.words)
+        return synonyms
+
+    @classmethod
+    @memory.cache
+    def relation(cls, a: str, b: str) -> Union[bool, Relation]:
+        """
+        Tries to use a Wordnik definition to deduce a relationship from word a to word b.
+        :param a: Source word.
+        :param b: Target word.
+        :return: Whether the relationship was found then the relationship
+            or a set of homonyms of a b if no relationship can be found.
+        """
         relations = []
         definitions = cls.defintion(b)
         for definition in definitions:
-            print(definition.relationshipType)
-            print(definition.words)
             for word in definition.words:
-                if definition.relationshipType in cls.relations[Relation.SYNONYM]:
-                    synonyms = synonyms.union(flatten([a]))
                 if a in word:
                     for relation, dict_relation in cls.relations.items():
                         if definition.relationshipType in dict_relation:
                             relations.append(relation)
         if relations:
             relations.sort(key=lambda r: r.value)
-            return True, relations[0]
-        return False, synonyms
+            return relations[0]
+        return False
 
 
     @classmethod
-    @memory.cache
     def étiqueter(cls, a: str, b: str) -> Relation:
+        """
+        Tries to label a semantic relationship from word a to word b automatically. Very approximate at best.
+        Inaccurate at worse.
+        :param a: Source word.
+        :param b: Target word.
+        :return: Relationship.
+        """
+        sleep(10)
         m_a = cls.get_metadata(a)
         try:
             m_b = cls.get_metadata(b)
         except IndexError:
             return Relation.RELATED
-        if cls.synonym(m_a, m_b):
+        if cls.is_synonym(m_a, m_b):
             return Relation.SYNONYM
-        success, result = cls.relation(a, b)
-        if success:
+        result = cls.relation(a, b)
+        if result:
             return result
-        if cls.part_of(a, b, result):
+        if cls.part_of(a, b):
             return Relation.PARTOF
         if cls.hyponyme(a, m_a, m_b):
             return Relation.HYPO

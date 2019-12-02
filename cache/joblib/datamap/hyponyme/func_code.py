@@ -1,4 +1,4 @@
-# first line: 93
+# first line: 95
     @classmethod
     @memory.cache
     def hyponyme(cls, word: str, a: Tuple[int, FrozenSet[str], FrozenSet[str]],
