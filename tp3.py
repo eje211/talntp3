@@ -12,20 +12,19 @@ try:
 except AttributeError:
     pass
 
+from config import config
 import warnings
 from typing import List, Union
 warnings.filterwarnings('ignore')
 csv.field_size_limit(sys.maxsize)
 
-from config import config
 
 
 class TP3Gensim:
 
     TEXT_VECTOR_OUTPUT = config.get('files', 'embeddings file')
 
-
-    OUTPUT_DATAFILE = 'data/wordslist.txt'
+    OUTPUT_DATAFILE = config.get('files', 'words data file')
     
     model = None
     
