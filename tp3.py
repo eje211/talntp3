@@ -24,8 +24,7 @@ class TP3Gensim:
 
     TEXT_VECTOR_OUTPUT = config.get('files', 'embeddings file')
 
-
-    OUTPUT_DATAFILE = 'data/wordslist.txt'
+    OUTPUT_DATAFILE = config.get('files', 'words data file')
     
     model = None
     

@@ -7,3 +7,4 @@ API key = abcdefghijklmnopqrstuvwxyz1234567890abcdbfghijklmn
 [files]
 embeddings file = data/text_vector.txt
 data cache = cache
+words data file = 'data/wordslist.txt'
