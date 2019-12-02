@@ -15,16 +15,13 @@ except AttributeError:
 from config import config
 import warnings
 from typing import List, Union
-warnings.filterwarnings('ignore')
+ warnings.filterwarnings('ignore')
 csv.field_size_limit(sys.maxsize)
-
 
 
 class TP3Gensim:
 
     TEXT_VECTOR_OUTPUT = config.get('files', 'embeddings file')
-
-    OUTPUT_DATAFILE = config.get('files', 'words data file')
     
     model = None
     
@@ -96,7 +93,11 @@ class TP3Gensim:
 class TP3Spacy:
     DATA_DIR = 'data'
 
-    SIMILARITY_TOLERANCE = 0.4
+    OUTPUT_DATAFILE = config.get('files', 'words data file')
+
+    SIMILARITY_TOLERANCE = config.getfloat('misc', 'similarity tolerance')
+
+    REPORT_SIZE = config.getint('misc', 'report size')
 
     nlp: Union[None, English] = None
 
@@ -114,4 +115,25 @@ class TP3Spacy:
                 and word.similarity(w) > cls.SIMILARITY_TOLERANCE]
         by_similarity = sorted(queries, key=lambda w: word.similarity(w), reverse=True)
         return by_similarity
+
+    @classmethod
+    def produce_report_data(cls):
+        if not hasattr(cls, 'nlp'):
+            cls.get_adata()
+        index = 0
+        words = []
+        with open(cls.OUTPUT_DATAFILE, 'r') as f:
+            while index < cls.REPORT_SIZE:
+                index += 1
+                line = f.readline()
+                line = line.split('\t')
+                line = line[0]
+                words.append(line)
+        words = [cls.nlp.vocab[w] for w in words]
+        cls.report = {}
+        for word in words:
+            similar = cls.most_similar(word)
+            cls.report[word.text] = [s.text for s in similar]
+
+
 
