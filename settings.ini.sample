@@ -1,0 +1,9 @@
+; Copier et personaliser ce fichier en un settings.ini.
+; Pour utiliser Wordnik, il faut une clé API privée obtenue sur https://developer.wordnik.com/ .
+
+[wordnik]
+API key = abcdefghijklmnopqrstuvwxyz1234567890abcdbfghijklmn
+
+[files]
+embeddings file = data/text_vector.txt
+data cache = cache
