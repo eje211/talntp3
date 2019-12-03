@@ -1,10 +1,17 @@
-# first line: 102
+# first line: 105
     @classmethod
     @memory.cache
-    def part_of(cls, a: str, b: str, synonyms: Set[str]) -> bool:
+    def part_of(cls, a: str, b: str) -> bool:
+        """
+        Returns whether word a is semantically a part of b.
+        :param a: a word
+        :param b: a word
+        :param synonyms: synonyms of a
+        :return:
+        """
         definition = cls.parser.fetch(b)
-        synonyms.add(a)
-        synonyms = '|'.join(synonyms)
+        a = cls.get_synonyms(a)
+        synonyms = '|'.join(a)
         try:
             definitions = [d['definitions'] for d in definition]
             definitions = flatten(definitions)

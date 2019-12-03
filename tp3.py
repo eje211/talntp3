@@ -15,7 +15,7 @@ except AttributeError:
 from config import config
 import warnings
 from typing import List, Union
- warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore')
 csv.field_size_limit(sys.maxsize)
 
 
@@ -102,7 +102,7 @@ class TP3Spacy:
     nlp: Union[None, English] = None
 
     @classmethod
-    def get_adata(cls):
+    def get_data(cls):
         cls.nlp = spacy.load(cls.DATA_DIR)
 
     @classmethod
@@ -118,8 +118,8 @@ class TP3Spacy:
 
     @classmethod
     def produce_report_data(cls):
-        if not hasattr(cls, 'nlp'):
-            cls.get_adata()
+        if cls.nlp is None:
+            cls.get_data()
         index = 0
         words = []
         with open(cls.OUTPUT_DATAFILE, 'r') as f:

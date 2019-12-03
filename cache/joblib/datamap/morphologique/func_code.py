@@ -1,4 +1,4 @@
-# first line: 129
+# first line: 130
     @staticmethod
     @memory.cache
     def morphologique(a: str, b: str) -> bool:

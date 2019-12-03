@@ -1,4 +1,4 @@
-# first line: 162
+# first line: 170
     @classmethod
     @memory.cache
     def relation(cls, a: str, b: str) -> Union[bool, Relation]:
@@ -10,7 +10,13 @@
             or a set of homonyms of a b if no relationship can be found.
         """
         relations = []
-        definitions = cls.defintion(b)
+        try:
+            definitions = cls.defintion(b)
+        except HTTPError as e:
+            if e.code == 404: 
+                return False
+            else:
+                raise
         for definition in definitions:
             for word in definition.words:
                 if a in word:

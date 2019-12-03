@@ -9,6 +9,7 @@ from config import config
 from joblib import Memory
 from morph import flatten
 from time import sleep
+from urllib.error import HTTPError
 
 
 class Relation(Enum):
@@ -102,6 +103,7 @@ class DataMap:
         return bool([p for p in parts if word in p])
 
     @classmethod
+    @memory.cache
     def part_of(cls, a: str, b: str) -> bool:
         """
         Returns whether word a is semantically a part of b.
@@ -112,7 +114,6 @@ class DataMap:
         """
         definition = cls.parser.fetch(b)
         a = cls.get_synonyms(a)
-        print(a)
         synonyms = '|'.join(a)
         try:
             definitions = [d['definitions'] for d in definition]
@@ -149,9 +150,16 @@ class DataMap:
         return word_api.getRelatedWords(word)
 
     @classmethod
+    @memory.cache
     def get_synonyms(cls, word: str) -> Set[str]:
         synonyms = {word}
-        definitions = cls.defintion(word)
+        try:
+            definitions = cls.defintion(word)
+        except HTTPError as e:
+            if e.code == 404:
+                return set()
+            else:
+                raise
         for definition in definitions:
             if word not in definition.words:
                 continue
@@ -170,7 +178,13 @@ class DataMap:
             or a set of homonyms of a b if no relationship can be found.
         """
         relations = []
-        definitions = cls.defintion(b)
+        try:
+            definitions = cls.defintion(b)
+        except HTTPError as e:
+            if e.code == 404: 
+                return False
+            else:
+                raise
         for definition in definitions:
             for word in definition.words:
                 if a in word:

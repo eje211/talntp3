@@ -1,4 +1,4 @@
-# first line: 139
+# first line: 140
     @classmethod
     @memory.cache
     def defintion(cls, word: str):
